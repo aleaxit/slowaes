@@ -131,7 +131,7 @@ class AES(object):
 
         Expands an 128,192,256 key into an 176,208,240 bytes key
 
-        expandedKey is a char list of large enough size;
+        expandedKey is a char list of large enough size,
         key is the non-expanded key.
         """
         # current expanded keySize, in bytes
@@ -178,7 +178,7 @@ class AES(object):
         Creates a round key from the given expanded key and the
         position within the expanded key.
         """
-        roundkey = [0] * 16
+        roundKey = [0] * 16
         for i in range(4):
             for j in range(4):
                 roundKey[j*4+i] = expandedKey[roundKeyPointer + i*4 + j]
@@ -317,7 +317,7 @@ class AES(object):
         else: return None
 
         # the expanded keySize
-        expandedKeySize = (16*(nbrRounds+1))
+        expandedKeySize = 16*(nbrRounds+1)
 
         #
         # Set the block values, for the block:
@@ -349,13 +349,9 @@ class AES(object):
                 output[(k*4)+l] = block[(k+(l*4))]
         return output
 
-    # TODO(aleaxit): keep cleaning up from here onwards
-
     # decrypts a 128 bit input block against the given key of size specified
-    def decrypt(self,iput, key, size):
-        output = []
-        while len(output) < 16:
-            output.append(0)
+    def decrypt(self, iput, key, size):
+        output = [0] * 16
         # the number of rounds
         nbrRounds = 0
         # the 128 bit block to decode
@@ -367,7 +363,8 @@ class AES(object):
         else: return None
 
         # the expanded keySize
-        expandedKeySize = (16*(nbrRounds+1))
+        expandedKeySize = 16*(nbrRounds+1)
+
         #
         # Set the block values, for the block:
         # a0,0 a0,1 a0,2 a0,3
@@ -393,25 +390,18 @@ class AES(object):
                 output[(k*4)+l] = block[(k+(l*4))]
         return output
 
-    #
-    # END AES SECTION
-    #
 
-class AESModeOfOperation:
-    #
-    # START MODE OF OPERATION SECTION
-    #
+class AESModeOfOperation(object):
+
     aes = AES()
 
     # structure of supported modes of operation
-    modeOfOperation = {
-        "OFB":0,
-        "CFB":1,
-        "CBC":2}
+    modeOfOperation = dict(OFB=0, CFB=1, CBC=2)
+
     # converts a 16 character string into a number array
-    def convertString(self,string,start,end,mode):
+    def convertString(self, string, start, end, mode):
         if end - start > 16: end = start + 16
-        if mode == self.modeOfOperation["CBC"]: ar = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        if mode == self.modeOfOperation["CBC"]: ar = [0] * 16
         else: ar = []
 
         i = start
@@ -432,18 +422,16 @@ class AESModeOfOperation:
     # size - the bit length of the key
     # hexIV - the 128 bit hex Initilization Vector
     #
-    def encrypt(self,stringIn,mode,key,size,IV):
-        if len(key)%size:
+    def encrypt(self, stringIn, mode, key, size, IV):
+        if len(key) % size:
             return None
-        if len(IV)%16:
+        if len(IV) % 16:
             return None
         # the AES input/output
         plaintext = []
         iput = [0] * 16
         output = []
-        ciphertext = []
-        while len(ciphertext) < 16:
-            ciphertext.append(0)
+        ciphertext = [0] * 16
         # the output cipher string
         cipherOut = []
         # char firstRound
@@ -452,9 +440,9 @@ class AESModeOfOperation:
             for j in range(int(math.ceil(float(len(stringIn))/16))):
                 start = j*16
                 end = j*16+16
-                if j*16+16 > len(stringIn):
+                if  end > len(stringIn):
                     end = len(stringIn)
-                plaintext = self.convertString(stringIn,start,end,mode)
+                plaintext = self.convertString(stringIn, start, end, mode)
                 if mode == self.modeOfOperation["CFB"]:
                     if firstRound:
                         output = self.aes.encrypt(IV, key, size)
@@ -513,19 +501,17 @@ class AESModeOfOperation:
     # size - the bit length of the key
     # IV - the 128 bit number array Initilization Vector
     #
-    def decrypt(self,cipherIn,originalsize,mode,key,size,IV):
+    def decrypt(self, cipherIn, originalsize, mode, key, size, IV):
         # cipherIn = unescCtrlChars(cipherIn)
-        if len(key)%size:
+        if len(key) % size:
             return None
-        if len(IV)%16:
+        if len(IV) % 16:
             return None
         # the AES input/output
         ciphertext = []
         iput = []
         output = []
-        plaintext = []
-        while len(plaintext) < 16:
-            plaintext.append(0)
+        plaintext = [0] * 16
         # the output plain text string
         stringOut = ''
         # char firstRound
@@ -587,26 +573,19 @@ class AESModeOfOperation:
                     else:
                         for k in range(end-start):
                             stringOut += chr(plaintext[k])
-                    iput = ciphertext;
-        return stringOut;
+                    iput = ciphertext
+        return stringOut
 
-    #
-    # END MODE OF OPERATION SECTION
-    #
 
 if __name__ == "__main__":
     moo = AESModeOfOperation()
-        if 0:
-            mode,orig_len,ciph = moo.encrypt("This is a test!",moo.modeOfOperation["OFB"],[143,194,34,208,145,203,230,143,177,246,97,206,145,92,255,84],moo.aes.keySize["SIZE_128"],[103,35,148,239,76,213,47,118,255,222,123,176,106,134,98,92])
-            print ciph
-            decr = moo.decrypt(ciph,orig_len,mode,[143,194,34,208,145,203,230,143,177,246,97,206,145,92,255,84],moo.aes.keySize["SIZE_128"],[103,35,148,239,76,213,47,118,255,222,123,176,106,134,98,92])
-            print decr
-        else:
-            cleartext = "This is a test!"
-            cypherkey = [143,194,34,208,145,203,230,143,177,246,97,206,145,92,255,84]
-            iv = [103,35,148,239,76,213,47,118,255,222,123,176,106,134,98,92]
-            mode, orig_len, ciph = moo.encrypt(cleartext, moo.modeOfOperation["CBC"], cypherkey,
-                                             moo.aes.keySize["SIZE_128"], iv)
-            print 'm=%s, ol=%s (%s), ciph=%s' % (mode, orig_len, len(cleartext), ciph)
-            decr = moo.decrypt(ciph, orig_len, mode, cypherkey ,moo.aes.keySize["SIZE_128"], iv)
-            print decr
+    cleartext = "This is a test!"
+    cypherkey = [143,194,34,208,145,203,230,143,177,246,97,206,145,92,255,84]
+    iv = [103,35,148,239,76,213,47,118,255,222,123,176,106,134,98,92]
+    mode, orig_len, ciph = moo.encrypt(cleartext, moo.modeOfOperation["CBC"],
+            cypherkey, moo.aes.keySize["SIZE_128"], iv)
+    print 'm=%s, ol=%s (%s), ciph=%s' % (mode, orig_len, len(cleartext), ciph)
+    decr = moo.decrypt(ciph, orig_len, mode, cypherkey,
+            moo.aes.keySize["SIZE_128"], iv)
+    print decr
+
