@@ -319,7 +319,6 @@ class AES(object):
         # the expanded keySize
         expandedKeySize = 16*(nbrRounds+1)
 
-        #
         # Set the block values, for the block:
         # a0,0 a0,1 a0,2 a0,3
         # a1,0 a1,1 a1,2 a1,3
@@ -327,8 +326,6 @@ class AES(object):
         # a3,0 a3,1 a3,2 a3,3
         # the mapping order is a0,0 a1,0 a2,0 a3,0 a0,1 a1,1 ... a2,3 a3,3
         #
-        while len(block) < 16:
-            block.append(0)
         # iterate over the columns
         for i in range(4):
             # iterate over the rows
@@ -365,14 +362,12 @@ class AES(object):
         # the expanded keySize
         expandedKeySize = 16*(nbrRounds+1)
 
-        #
         # Set the block values, for the block:
         # a0,0 a0,1 a0,2 a0,3
         # a1,0 a1,1 a1,2 a1,3
         # a2,0 a2,1 a2,2 a2,3
         # a3,0 a3,1 a3,2 a3,3
         # the mapping order is a0,0 a1,0 a2,0 a3,0 a0,1 a1,1 ... a2,3 a3,3
-        #
 
         # iterate over the columns
         for i in range(4):
@@ -414,14 +409,12 @@ class AESModeOfOperation(object):
             i += 1
         return ar
 
-    #
     # Mode of Operation Encryption
     # stringIn - Input String
     # mode - mode of type modeOfOperation
     # hexKey - a hex key of the bit length size
     # size - the bit length of the key
     # hexIV - the 128 bit hex Initilization Vector
-    #
     def encrypt(self, stringIn, mode, key, size, IV):
         if len(key) % size:
             return None
@@ -492,7 +485,6 @@ class AESModeOfOperation(object):
                         cipherOut.append(ciphertext[k])
         return mode, len(stringIn), cipherOut
 
-    #
     # Mode of Operation Decryption
     # cipherIn - Encrypted String
     # originalsize - The unencrypted string length - required for CBC
@@ -500,7 +492,6 @@ class AESModeOfOperation(object):
     # key - a number array of the bit length size
     # size - the bit length of the key
     # IV - the 128 bit number array Initilization Vector
-    #
     def decrypt(self, cipherIn, originalsize, mode, key, size, IV):
         # cipherIn = unescCtrlChars(cipherIn)
         if len(key) % size:
