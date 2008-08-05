@@ -687,6 +687,7 @@ var slowAES = {
 				if(j*16+16 > stringIn.length)
 					end = stringIn.length;
 				plaintext = this.convertString(stringIn,start,end,mode);
+                // console.log('PT@'+j+': '+plaintext);
 				if (mode == this.modeOfOperation.CFB)
 				{
 					if (firstRound)
@@ -721,6 +722,7 @@ var slowAES = {
 				{
 					for (var i = 0; i < 16; i++)
 						input[i] = plaintext[i] ^ ((firstRound) ? iv[i] : ciphertext[i]);
+                    // console.log('IP@'+j+': '+input);
 					firstRound = false;
 					ciphertext = this.aes.encrypt(input, key, size);
 					// always 16 bytes because of the padding for CBC
