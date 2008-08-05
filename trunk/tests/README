@@ -1,0 +1,10 @@
+The tests are coded in Python and use Python-Spidermonkey (see:
+http://code.google.com/p/python-spidermonkey/) to run Javascript and Python
+code "in parallel" to ensure intermediate and final results match, &c.
+
+Future scripting languages should use a similar approach (e.g. see
+http://www.goto.info.waseda.ac.jp/~fukusima/ruby/python/doc/index.html for the
+Ruby/Python module).
+
+TODO(aleax): get some tests actually WRITTEN;-)
+
