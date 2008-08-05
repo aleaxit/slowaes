@@ -1,10 +1,12 @@
 /*
  * aes - Cryptography Tools for JavaScript
  * 
- * Copyright (c) 2008 	Josh Davis ( http://www.josh-davis.org ),
- * 			Laurent Haan ( http://www.progressive-coding.com ),
- * 			Johan Sundstrom ( http://ecmanaut.blogspot.com ),
+ * Copyright (c) 2008 	Josh Davis ( http://www.josh-davis.org )
+ * 
+ * Portions Copyright(c) 2007 Johan Sundstrom ( http://ecmanaut.blogspot.com ),
  * 			John Resig ( http://ejohn.org )
+ *
+ * Ported from C code written by Laurent Haan ( http://www.progressive-coding.com )
  * 
  * Licensed under the Apache License, Version 2.0
  * http://www.apache.org/licenses/
@@ -14,7 +16,7 @@
  * Distributed under the BSD License
  */
 
-var ecmaScrypt = {
+var slowAES = {
 	// encodes a unicode string to UTF8 (8 bit characters are critical to AES functioning properly)
 	encode_utf8:function(s)
 	{
