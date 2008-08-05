@@ -3,13 +3,13 @@
 
 = Introduction =
 
-I plan to keep this page up to date with OpenSSL standers for interoperability.
+I plan to keep this page up to date with OpenSSL standards for interoperability.
 
 
 = Details =
 
 == Padding ==
-OpenSSL pads its AES 16 Byte blocks, with a value equal to the number of padded bytes (this is known as PKCS7 padding, see for example http://www.cryptostuff.com/crypto/index.php?title=blockpad).
+OpenSSL pads its AES 16 byte blocks, with a value equal to the number of padded bytes (this approach is known as PKCS7 padding, see for example http://www.cryptostuff.com/crypto/index.php?title=blockpad).
 
 For example, the following unencrypted 16 Byte block
 
