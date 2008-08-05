@@ -1,0 +1,37 @@
+#labels OpenSSL,OpenSSLKeyPadding,OpenSSLPBE
+=OpenSSL Standards and quirks=
+
+= Introduction =
+
+I plan to keep this page up to date with OpenSSL standers for interoperability.
+
+
+= Details =
+
+== Padding ==
+OpenSSL pads its AES 16 Byte blocks, with a value equal to the number of padded bytes.
+
+For example, the following unencrypted 16 Byte block
+
+|| ff || ff || ff || ff ||
+|| ff || ff || ff || 03 ||
+|| ff || ff || ff || 03 ||
+|| ff || ff || ff || 03 ||
+
+has a final byte value of 0x03, which means that the 3 last bytes are padding and should be removed. This rule also means that when presented with a final block of exactly 16 bytes, one would need to add a block filled with the byte value of 16 or 0x10. 
+
+Example
+
+|| ee || aa || bb || aa ||
+|| ff || bb || aa || bb ||
+|| aa || cc || cc || cc ||
+|| bb || dd || dd || dd ||
+
+|| 10 || 10 || 10 || 10 ||
+|| 10 || 10 || 10 || 10 ||
+|| 10 || 10 || 10 || 10 ||
+|| 10 || 10 || 10 || 10 ||
+
+=== OpenSSL PBE ===
+
+I'll update this tomorrow
