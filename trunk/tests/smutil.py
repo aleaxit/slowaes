@@ -17,11 +17,9 @@ def init():
     f = open(jsfile)
     jscript = f.read()
     f.close()
-    print 'aes is [%r...] %d' % (jscript[:40], len(jscript))
     cx.eval_script(jscript)
     return cx
 cx = init()
-print 'cx is %r' % (cx,)
 
 def aesdo(method, *args):
     return do('slowAES.%s' % (method%args))
