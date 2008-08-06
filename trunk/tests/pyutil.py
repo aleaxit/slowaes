@@ -5,9 +5,6 @@ import sys
 
 modes = 'OFB CFB CBC'.split()
 
-def do(s):
-    return cx.eval_script(s)
-
 def init():
     directory, fn = os.path.split(__file__)
     pydir = os.path.join(directory, '../python/')
@@ -15,9 +12,6 @@ def init():
     import aes
     return aes
 aes = init()
-
-def aesdo(method, *args):
-    return do('slowAES.%s' % (method%args))
 
 def str2nums(s):
     return map(ord, s)
