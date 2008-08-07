@@ -33,5 +33,14 @@ Example
 || 10 || 10 || 10 || 10 ||
 
 === OpenSSL PBE ===
+http://www.rsa.com/rsalabs/node.asp?id=2127
 
-I'll update this tomorrow
+OpenSSL uses PKCS 5 v1.5 to generate a key and iv from a password string and randon 8 byte salt. OpenSSL only used a MD5 hash iteration of 1, where as most PKCS 5 docs call for iterations of 2000 or more in order to make dictionary attacks much more expensive.
+
+,, (I'll include my JS code for this tomorrow. For now, here's a link to a valid C# version - http://jensign.com/JavaScience/dotnet/DeriveKeyM/index.html) ,,
+
+
+=== Base64 Encoding ===
+
+In order to remain compatible with OpenSSL, Base64 lines should break every 64 characters. If the Base64 encoded string is less than 64 characters, a break should be included at the end automatically. If it more than 1 line, breaks only need to be included every 64 characters, and not at the end of the last line.
+
