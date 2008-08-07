@@ -13,6 +13,20 @@
 #
 import math
 
+def append_PKCS7_padding(s):
+    """return s padded to a multiple of 16-bytes by PKCS7 padding"""
+    numpads = 16 - (len(s)%16)
+    return s + numpads*chr(numpads)
+
+def strip_PKCS7_padding(s):
+    """return s stripped of PKCS7 padding"""
+    if len(s)%16 or not s:
+        raise ValueError("String of len %d can't be PCKS7-padded" % len(s))
+    numpads = ord(s[-1])
+    if numpads > 16:
+        raise ValueError("String ending with %r can't be PCKS7-padded" % s[-1])
+    return s[:-numpads]
+
 class AES(object):
     # valid key sizes
     keySize = dict(SIZE_128=16, SIZE_192=24, SIZE_256=32)
