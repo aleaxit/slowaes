@@ -1,5 +1,5 @@
+#summary OpenSSL Standards and quirks
 #labels OpenSSL,OpenSSLKeyPadding,OpenSSLPBE
-=OpenSSL Standards and quirks=
 
 = Introduction =
 
