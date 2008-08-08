@@ -1,4 +1,4 @@
-#Speed improvements from table lookups
+#summary Speed improvements from table lookups
 
 In experimenting with Josh Davis' javascript code, I found that using lookup tables for the mixColumns method yielded a 10 times speed increase. The cost is the size of the lookup tables which adds about 4k to the program, but I think the speed improvement is worth it.
 
