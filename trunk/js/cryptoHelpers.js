@@ -73,5 +73,25 @@ var cryptoHelpers = {
 	{
 		var sha = jsHash.sha2.arr_sha256(s);
 		return sha.slice(0,size);
+	},
+
+	convertStringToByteArray: function(s)
+	{
+		var byteArray = [];
+		for(var i = 0;i < s.length;i++)
+                {
+                        byteArray.push(s.charCodeAt(i));
+                }
+		return byteArray;
+	},
+
+	convertByteArrayToString: function(byteArray)
+	{
+		var s = '';
+		for(var i = 0;i < byteArray.length;i++)
+                {
+                        s += String.fromCharCode(byteArray[i])
+                }
+		return s;
 	}
 };
