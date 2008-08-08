@@ -438,36 +438,54 @@ var slowAES = {
 		CFB:1,
 		CBC:2
 	},
-	
+
 	// converts a 16 character string into a number array;
-	convertString:function(string,start,end,mode)
+        convertString:function(string,start,end,mode)
+        {
+                if(end - start > 16)
+                        end = start + 16;
+                if (mode == this.modeOfOperation.CBC)
+                        var array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+                else
+                        var array = [];
+                var j = 0;
+                for(var i = start;i < end;i++)
+                {
+                        array[j] = string.charCodeAt(i);
+                        j++;
+                }
+                return array;
+        },
+	
+	// gets a properly padded block
+	getPaddedBlock: function(bytesIn,start,end,mode)
 	{
 		if(end - start > 16)
 			end = start + 16;
+		
+		var array = bytesIn.slice(start, end);
+		
 		if (mode == this.modeOfOperation.CBC)
-			var array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-		else
-			var array = [];
-		var j = 0;
-		for(var i = start;i < end;i++)
 		{
-			array[j] = string.charCodeAt(i);
-			j++;
+			while(array.length < 16)
+			{
+				array.push(0);
+			}
 		}
+			
 		return array;
 	},
 	
 	/*
 	 * Mode of Operation Encryption
-	 * stringIn - Input String
+	 * bytesIn - Input String as array of bytes
 	 * mode - mode of type modeOfOperation
 	 * key - a number array of length 'size'
 	 * size - the bit length of the key
 	 * iv - the 128 bit number array Initialization Vector
 	 */
-	encrypt:function(stringIn,mode,key,size,iv)
+	encrypt: function (bytesIn, mode, key, size, iv)
 	{
-		stringIn = cryptoHelpers.encode_utf8(stringIn);
 		if(key.length%size)
 		{
 			throw 'Key length does not match specified size.';
@@ -477,24 +495,22 @@ var slowAES = {
 			throw 'iv length must be 128 bits.';
 		}
 		// the AES input/output
-		var plaintext = [];
+		var byteArray = [];
 		var input = [];
 		var output = [];
 		var ciphertext = [];
-		//the output cipher string
-		var cipherOut = '';
+		var cipherOut = [];
 		// char firstRound
 		var firstRound = true;
-		if (stringIn !== null)
+		if (bytesIn !== null)
 		{
-			for (var j = 0;j < Math.ceil(stringIn.length/16); j++)
+			for (var j = 0;j < Math.ceil(bytesIn.length/16); j++)
 			{
 				var start = j*16;
 				var end = j*16+16;
-				if(j*16+16 > stringIn.length)
-					end = stringIn.length;
-				plaintext = this.convertString(stringIn,start,end,mode);
-                // console.log('PT@'+j+': '+plaintext);
+				if(j*16+16 > bytesIn.length)
+					end = bytesIn.length;
+				byteArray = this.getPaddedBlock(bytesIn,start,end,mode);
 				if (mode == this.modeOfOperation.CFB)
 				{
 					if (firstRound)
@@ -505,9 +521,9 @@ var slowAES = {
 					else
 						output = this.aes.encrypt(input, key, size);
 					for (var i = 0; i < 16; i++)
-						ciphertext[i] = plaintext[i] ^ output[i];
+						ciphertext[i] = byteArray[i] ^ output[i];
 					for(var k = 0;k < end-start;k++)
-						cipherOut += String.fromCharCode(ciphertext[k]);
+						cipherOut.push(ciphertext[k]);
 					input = ciphertext;
 				}
 				else if (mode == this.modeOfOperation.OFB)
@@ -520,30 +536,29 @@ var slowAES = {
 					else
 						output = this.aes.encrypt(input, key, size);
 					for (var i = 0; i < 16; i++)
-						ciphertext[i] = plaintext[i] ^ output[i];
+						ciphertext[i] = byteArray[i] ^ output[i];
 					for(var k = 0;k < end-start;k++)
-						cipherOut += String.fromCharCode(ciphertext[k]);
+						cipherOut.push(ciphertext[k]);
 					input = output;
 				}
 				else if (mode == this.modeOfOperation.CBC)
 				{
 					for (var i = 0; i < 16; i++)
-						input[i] = plaintext[i] ^ ((firstRound) ? iv[i] : ciphertext[i]);
-                    // console.log('IP@'+j+': '+input);
+						input[i] = byteArray[i] ^ ((firstRound) ? iv[i] : ciphertext[i]);
 					firstRound = false;
 					ciphertext = this.aes.encrypt(input, key, size);
 					// always 16 bytes because of the padding for CBC
 					for(var k = 0;k < 16;k++)
-						cipherOut += String.fromCharCode(ciphertext[k]);
+						cipherOut.push(ciphertext[k]);
 				}
 			}
 		}
-		return {mode:mode,originalsize:stringIn.length,cipher:cipherOut};
+		return {mode:mode,originalsize:bytesIn.length,cipher:cipherOut};
 	},
 	
 	/*
 	 * Mode of Operation Decryption
-	 * cipherIn - Encrypted String
+	 * cipherIn - Encrypted String as array of bytes
 	 * originalsize - The unencrypted string length - required for CBC
 	 * mode - mode of type modeOfOperation
 	 * key - a number array of length 'size'
@@ -565,9 +580,8 @@ var slowAES = {
 		var ciphertext = [];
 		var input = [];
 		var output = [];
-		var plaintext = [];
-		//the output plain text string
-		var stringOut = '';
+		var byteArray = [];
+		var bytesOut = [];
 		// char firstRound
 		var firstRound = true;
 		if (cipherIn !== null)
@@ -578,7 +592,7 @@ var slowAES = {
 				var end = j*16+16;
 				if(j*16+16 > cipherIn.length)
 					end = cipherIn.length;
-				ciphertext = this.convertString(cipherIn,start,end,mode);
+				ciphertext = this.getPaddedBlock(cipherIn,start,end,mode);
 				if (mode == this.modeOfOperation.CFB)
 				{
 					if (firstRound)
@@ -589,9 +603,9 @@ var slowAES = {
 					else
 						output = this.aes.encrypt(input, key, size);
 					for (i = 0; i < 16; i++)
-						plaintext[i] = output[i] ^ ciphertext[i];
+						byteArray[i] = output[i] ^ ciphertext[i];
 					for(var k = 0;k < end-start;k++)
-						stringOut += String.fromCharCode(plaintext[k]);
+						bytesOut.push(byteArray[k]);
 					input = ciphertext;
 				}
 				else if (mode == this.modeOfOperation.OFB)
@@ -604,28 +618,28 @@ var slowAES = {
 					else
 						output = this.aes.encrypt(input, key, size);
 					for (i = 0; i < 16; i++)
-						plaintext[i] = output[i] ^ ciphertext[i];
+						byteArray[i] = output[i] ^ ciphertext[i];
 					for(var k = 0;k < end-start;k++)
-						stringOut += String.fromCharCode(plaintext[k]);
+						bytesOut.push(byteArray[k]);
 					input = output;
 				}
 				else if(mode == this.modeOfOperation.CBC)
 				{
 					output = this.aes.decrypt(ciphertext, key, size);
 					for (i = 0; i < 16; i++)
-						plaintext[i] = ((firstRound) ? iv[i] : input[i]) ^ output[i];
+						byteArray[i] = ((firstRound) ? iv[i] : input[i]) ^ output[i];
 					firstRound = false;
 					if (originalsize < end)
 						for(var k = 0;k < originalsize-start;k++)
-							stringOut += String.fromCharCode(plaintext[k]);
+							bytesOut.push(byteArray[k]);
 					else
 						for(var k = 0;k < end-start;k++)
-							stringOut += String.fromCharCode(plaintext[k]);
+							bytesOut.push(byteArray[k]);
 					input = ciphertext;
 				}
 			}
 		}
-		return cryptoHelpers.decode_utf8(stringOut);
+		return bytesOut;
 	}
 	/*
 	 * END MODE OF OPERATION SECTION

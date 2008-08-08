@@ -20,16 +20,24 @@ def init():
     cx.bind_object('console', console)
     directory, fn = os.path.split(__file__)
     jsdir = os.path.join(directory, '../js/')
-    jsfile = os.path.join(jsdir, 'aes.js')
-    f = open(jsfile)
-    jscript = f.read()
+    chFile = os.path.join(jsdir, 'cryptoHelpers.js')
+    f = open(chFile)
+    chScript = f.read()
     f.close()
-    cx.eval_script(jscript)
+    aesFile = os.path.join(jsdir, 'aes.js')
+    f = open(aesFile)
+    aesScript = f.read()
+    f.close()
+    cx.eval_script(chScript)
+    cx.eval_script(aesScript)
     return cx
 cx = init()
 
 def aesdo(method, *args):
     return do('slowAES.%s' % (method%args))
+
+def cryptohelpersdo(method, *args):
+    return do('cryptoHelpers.%s' % (method%args))
 
 def str2nums(s):
     return map(ord, s)
