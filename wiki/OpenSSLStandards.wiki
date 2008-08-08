@@ -79,7 +79,8 @@ Basically what we are doing here is
   md5_hash[2] = MD5Digest(md5_hash[1] | password | salt)
   key = md5_hash[0] | md5_hash[1]
   iv = md5_hash[2]
-}}} where '|' denotes concatenation.
+}}} 
+where '|' denotes concatenation.
 
 If you need to compare it to the output of openssl use the following command line
 ` echo -n "test" | openssl enc -aes-256-cbc -a -p -k password `
