@@ -33,7 +33,7 @@ def init():
     return cx
 cx = init()
 
-def aesdo(method, *args):
+def slowaesdo(method, *args):
     return do('slowAES.%s' % (method%args))
 
 def cryptohelpersdo(method, *args):
