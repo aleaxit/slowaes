@@ -1,8 +1,9 @@
 /*
-* cryptoHelpers.js: implements AES - Advanced Encryption Standard
-* from the SlowAES project, http://code.google.com/p/slowaes/
+ * cryptoHelpers.js: implements AES - Advanced Encryption Standard
+ * from the SlowAES project, http://code.google.com/p/slowaes/
  * 
  * Copyright (c) 2008 	Josh Davis ( http://www.josh-davis.org ),
+ *						Mark Percival ( http://mpercival.com ),
  * 						Johan Sundstrom ( http://ecmanaut.blogspot.com ),
  *			 			John Resig ( http://ejohn.org )
  * 
@@ -93,5 +94,79 @@ var cryptoHelpers = {
                         s += String.fromCharCode(byteArray[i])
                 }
 		return s;
+	},
+	
+	base64: {
+	    // Takes a Nx16x1 byte array and converts it to Base64
+	    chars: [
+	    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+	    'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+	    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+	    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+	    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+	    'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+	    'w', 'x', 'y', 'z', '0', '1', '2', '3',
+	    '4', '5', '6', '7', '8', '9', '+', '/'],
+	
+	    encode: function(b)
+		{
+	        var flatArr = b;
+	        var b64 = '';
+	        totalChunks = Math.floor(b.length * 16 / 3);
+	        //for (var i = 0; i < b.length * 16; i++)
+			//{
+	        //    flatArr.push(b[Math.floor(i / 16)][i % 16]);
+	        //}
+	        for (var i = 0; i < flatArr.length; i += 3)
+			{
+	            b64 += this.chars[flatArr[i] >> 2];
+	            b64 += this.chars[((flatArr[i] & 3) << 4) | (flatArr[i + 1] >> 4)];
+	            if (!(flatArr[i + 1] == null))
+				{
+	                b64 += this.chars[((flatArr[i + 1] & 15) << 2) | (flatArr[i + 2] >> 6)];
+	            }
+				else
+				{
+	                b64 += '=';
+	            }
+	            if (!(flatArr[i + 2] == null))
+				{
+	                b64 += this.chars[flatArr[i + 2] & 63];
+	            }
+				else
+				{
+	                b64 += '=';
+	            }
+	        }
+	        // OpenSSL is super particular about line breaks
+	        var broken_b64 = b64.slice(0, 64) + '\n';
+	        for (var i = 1; i < (Math.ceil(b64.length / 64)); i++)
+			{
+	            broken_b64 += b64.slice(i * 64, i * 64 + 64) + (Math.ceil(b64.length / 64) == i + 1 ? '': '\n');
+	        }
+	        return broken_b64;
+	    },
+	
+	    decode: function(string)
+		{
+	        string = string.replace(/\n/g, '');
+	        var flatArr = [];
+	        var c = [];
+	        var b = [];
+	        for (var i = 0; i < string.length; i = i + 4)
+			{
+	            c[0] = this.chars.indexOf(string.charAt(i));
+	            c[1] = this.chars.indexOf(string.charAt(i + 1));
+	            c[2] = this.chars.indexOf(string.charAt(i + 2));
+	            c[3] = this.chars.indexOf(string.charAt(i + 3));
+	
+	            b[0] = (c[0] << 2) | (c[1] >> 4);
+	            b[1] = ((c[1] & 15) << 4) | (c[2] >> 2);
+	            b[2] = ((c[2] & 3) << 6) | c[3];
+	            flatArr.push(b[0], b[1], b[2]);
+	        }
+	        flatArr = flatArr.slice(0, flatArr.length - (flatArr.length % 16));
+	        return flatArr;
+	    }
 	}
 };
