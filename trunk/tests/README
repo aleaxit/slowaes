@@ -16,8 +16,15 @@ Tests currently present: smoketest_js.py (a tiny smoke-test of encryption and
 decryption in all 3 modes); compare_pj.py (a similar smoke-test, but comparing
 the JS and Python implementations of AES to ensure identical results).
 
-TODO: write many more tests, including ones ensuring interoperability with
-other AES implementations and in particular PKCS7 padding (the latter
-functionality must of course first be implemented in both Python and JS;-).
+To run the tests:
+$ cd slowaes/tests
+$ python smoketests_py.py
+$ python smoketests_js.py
+$ pyton compare_pj.py
 
+[[Note: the latter is currently known to be broken with a mysterious JS error
+"array.push is not a function" (?)]]
+
+TODO: write many more tests, including integration tests ensuring
+interoperability with other AES implementations.
 
