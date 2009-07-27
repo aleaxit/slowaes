@@ -8,7 +8,7 @@ modes = 'OFB CFB CBC'.split()
 def init():
     directory, fn = os.path.split(__file__)
     pydir = os.path.join(directory, '../python/')
-    sys.path.append(pydir)
+    sys.path.insert(1, pydir)
     import aes
     return aes
 aes = init()
