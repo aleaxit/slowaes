@@ -597,7 +597,8 @@ def encryptData(key, data, mode=AESModeOfOperation.modeOfOperation["CBC"]):
 
     """
     key = map(ord, key)
-    data = append_PKCS7_padding(data)
+    if mode == AESModeOfOperation.modeOfOperation["CBC"]:
+        data = append_PKCS7_padding(data)
     keysize = len(key)
     assert keysize in AES.keySize.values(), 'invalid key size: %s' % keysize
     # create a new iv using random data
@@ -614,7 +615,7 @@ def decryptData(key, data, mode=AESModeOfOperation.modeOfOperation["CBC"]):
 
     `key` should be a string of bytes.
 
-    `data` should have the initialization vector prepended as a string or
+    `data` should have the initialization vector prepended as a string of
     ordinal values.
 
     """
@@ -627,7 +628,8 @@ def decryptData(key, data, mode=AESModeOfOperation.modeOfOperation["CBC"]):
     data = map(ord, data[16:])
     moo = AESModeOfOperation()
     decr = moo.decrypt(data, None, mode, key, keysize, iv)
-    decr = strip_PKCS7_padding(decr)
+    if mode == AESModeOfOperation.modeOfOperation["CBC"]:
+        decr = strip_PKCS7_padding(decr)
     return decr
 
 def generateRandomKey(keysize):
