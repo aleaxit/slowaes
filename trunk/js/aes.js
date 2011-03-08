@@ -579,24 +579,13 @@ var slowAES = {
 		CBC:2
 	},
 	
-	// gets a properly padded block
-	getPaddedBlock: function(bytesIn,start,end,mode)
+	// get a 16 byte block (aes operates on 128bits)
+	getBlock: function(bytesIn,start,end,mode)
 	{
 		if(end - start > 16)
 			end = start + 16;
 		
-		var array = bytesIn.slice(start, end);
-		
-		if (mode == this.modeOfOperation.CBC)
-		{
-			var cpad = 16 - array.length;
-			while(array.length < 16)
-			{
-				array.push(cpad);
-			}
-		}
-			
-		return array;
+		return bytesIn.slice(start, end);
 	},
 	
 	/*
@@ -607,12 +596,9 @@ var slowAES = {
 	 * size - the bit length of the key
 	 * iv - the 128 bit number array Initialization Vector
 	 */
-	encrypt: function (bytesIn, mode, key, size, iv)
+	encrypt: function (bytesIn, mode, key, iv)
 	{
-		if(key.length%size)
-		{
-			throw 'Key length does not match specified size.';
-		}
+		var size = key.length;
 		if(iv.length%16)
 		{
 			throw 'iv length must be 128 bits.';
@@ -625,6 +611,8 @@ var slowAES = {
 		var cipherOut = [];
 		// char firstRound
 		var firstRound = true;
+		if (mode == this.modeOfOperation.CBC)
+			this.padBytesIn(bytesIn);
 		if (bytesIn !== null)
 		{
 			for (var j = 0;j < Math.ceil(bytesIn.length/16); j++)
@@ -633,7 +621,7 @@ var slowAES = {
 				var end = j*16+16;
 				if(j*16+16 > bytesIn.length)
 					end = bytesIn.length;
-				byteArray = this.getPaddedBlock(bytesIn,start,end,mode);
+				byteArray = this.getBlock(bytesIn,start,end,mode);
 				if (mode == this.modeOfOperation.CFB)
 				{
 					if (firstRound)
@@ -676,7 +664,7 @@ var slowAES = {
 				}
 			}
 		}
-		return {mode:mode,originalsize:bytesIn.length,cipher:cipherOut};
+		return cipherOut;
 	},
 	
 	/*
@@ -688,13 +676,9 @@ var slowAES = {
 	 * size - the bit length of the key
 	 * iv - the 128 bit number array Initialization Vector
 	 */
-	decrypt:function(cipherIn,originalsize,mode,key,size,iv)
+	decrypt:function(cipherIn,mode,key,iv)
 	{
-		if(key.length%size)
-		{
-			throw 'Key length does not match specified size.';
-			return null;
-		}
+		var size = key.length;
 		if(iv.length%16)
 		{
 			throw 'iv length must be 128 bits.';
@@ -715,7 +699,7 @@ var slowAES = {
 				var end = j*16+16;
 				if(j*16+16 > cipherIn.length)
 					end = cipherIn.length;
-				ciphertext = this.getPaddedBlock(cipherIn,start,end,mode);
+				ciphertext = this.getBlock(cipherIn,start,end,mode);
 				if (mode == this.modeOfOperation.CFB)
 				{
 					if (firstRound)
@@ -752,17 +736,43 @@ var slowAES = {
 					for (i = 0; i < 16; i++)
 						byteArray[i] = ((firstRound) ? iv[i] : input[i]) ^ output[i];
 					firstRound = false;
-					if (originalsize < end)
-						for(var k = 0;k < originalsize-start;k++)
-							bytesOut.push(byteArray[k]);
-					else
-						for(var k = 0;k < end-start;k++)
-							bytesOut.push(byteArray[k]);
+					for(var k = 0;k < end-start;k++)
+						bytesOut.push(byteArray[k]);
 					input = ciphertext;
 				}
 			}
+			if(mode == this.modeOfOperation.CBC)
+			    this.unpadBytesOut(bytesOut);
 		}
 		return bytesOut;
+	},
+	padBytesIn: function(data) {
+		var len = data.length;
+		var padByte = 16 - (len % 16);
+		for (var i = 0; i < padByte; i++) {
+			data.push(padByte);
+		}
+	},
+	unpadBytesOut: function(data) {
+		var padCount = 0;
+		var padByte = -1;
+		var blockSize = 16;
+		for (var i = data.length - 1; i >= data.length-1 - blockSize; i--) {
+			if (data[i] <= blockSize) {
+				if (padByte == -1)
+					padByte = data[i];
+				if (data[i] != padByte) {
+					padCount = 0;
+					break;
+				}
+				padCount++;
+			} else
+				break;
+			if (padCount == padByte)
+				break;
+		}
+		if (padCount > 0)
+			data.splice(data.length - padCount, padCount);
 	}
 	/*
 	 * END MODE OF OPERATION SECTION
